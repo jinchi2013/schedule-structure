@@ -18,40 +18,38 @@
 	}
 	.event {
 		position: absolute;
-		border: 1px solid navy;
 		background-color: green;
-		padding: 2px;
 	}
 </style>
 </head>
 <body>
-	<h1>Hello</h1>
+	<h1>Hello, please call goGoGo() with valid params in the console</h1>
+	<h2>for example, goGoGo([{start: 30, end: 40}, {start: 35, end: 70}, {start: 60, end: 90}, {start: 25, end: 85}]); </h2>
 	<div id="container">
-		<div class="event">
-			
-		</div>
-		
 	</div>
+
 	<script type="text/javascript" src='schedule.js'></script>
 	<script type="text/javascript">
-		var scheduledEventsArray = [
-			{start: 30, end: 60},
-			{start: 40, end: 70},
-			{start: 50, end: 60}
-		];
-		var scheduleEventsObject = scheduleModule.prepareScheduleStructure(scheduledEventsArray);
-		var container = document.getElementById('container');
-		var eventContent = '';
 
-		scheduleEventsObject.levelArray.forEach(function(levelInArray){
-			
-			scheduleEventsObject[levelInArray].forEach(function(event){
+		function goGoGo ( scheduledEventsArray ) {
+			var scheduleEventsObject = scheduleModule.prepareScheduleObjectForDOM(scheduledEventsArray);
+			var container = document.getElementById('container');
 
+			scheduleEventsObject.levelArray.forEach(function(levelInArray){
+				
+				scheduleEventsObject[levelInArray].forEach(function(event){
+					var eventBlock = document.createElement('div');
 
-			
+					eventBlock.setAttribute('class', 'event');
+					eventBlock.style.top = event.topPosition + 'px';
+					eventBlock.style.left = event.leftPosition + 'px';
+					eventBlock.style.height = event.height + 'px';
+					eventBlock.style.width = event.width + 'px';
+
+					container.appendChild(eventBlock);
+				});
 			});
-
-		});
+		}
 
 	</script>
 </body>

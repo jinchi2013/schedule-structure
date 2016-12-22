@@ -29,6 +29,8 @@ scheduleModule = (function() {
 				eventLevelCategory[level] = [];
 				eventLevelCategory.levelArray.push(level);
 			}
+			startEvent['AtLevel'] = level;
+			startEvent['IndexNum'] = eventLevelCategory[level].length;
 			eventLevelCategory[level].push(startEvent);
 			
 			while (otherEvents.length > 0) {
@@ -37,6 +39,7 @@ scheduleModule = (function() {
 				var levelArray = copyEventLevelCategory.levelArray.slice(0);
 				var newStartEvent = otherEvents.shift();
 				newStartEvent['ConflictWith'] = '';
+				newStartEvent['conflictsEventArray'] = [];
 
 				// loop through each level
 				levelArray.forEach(function(LevelInArray){
@@ -49,15 +52,19 @@ scheduleModule = (function() {
 					// loop through each event in one level
 					copyEventLevelCategory[LevelInArray].forEach(function(eventInLevel){
 
-						if( (eventInLevel.start <= newStartEvent.start && newStartEvent.start < eventInLevel.end) || (eventInLevel.start < newStartEvent.end && newStartEvent.end <= eventInLevel.end) ) {
+						// set the condition to decide whether two events has conflict
+						if( (eventInLevel.start <= newStartEvent.start && newStartEvent.start < eventInLevel.end) || (eventInLevel.start < newStartEvent.end && newStartEvent.end <= eventInLevel.end) || (newStartEvent.start <= eventInLevel.start && newStartEvent.end >= eventInLevel.end) ) {
 
 							// found out newEvent has conflict with events in current level
+							// set var conflictsInLevel = false; to true,
+							// Add event labelName to a string in newStartEvent,
+							// Add conflict event into conflictsEventArray in newStartEvent.
 							conflictsInLevel = true;
 							newStartEvent['ConflictWith'] += eventInLevel.labelName + '|';
+							newStartEvent['conflictsEventArray'].push(Object.assign({}, eventInLevel));
 							
 							// add 1 to newLevelIndex, 
-							// push newLevelIndex into copyEventLevelCategory.levelArray,
-							// set var conflictsInCurrentLevel = false; to true, 
+							
 							// add attribute to newEvent => hasConflictIn1 : true
 							if ( typeof newStartEvent['hasConflictIn' + LevelInArray] === 'undefined' ) {
 
@@ -90,45 +97,66 @@ scheduleModule = (function() {
 		return eventLevelCategory;
 	}
 
-	function prepareScheduleStructure( scheduledEventsArray ) {
-		var eventLevelCategory = categoryEventsLevel(scheduledEventsArray);
-		var categoryLevelsArray = eventLevelCategory.levelArray.slice(0);
-		var totalNumberOfEvent = 0;
+	function addHeightTopForScheduleObjectForDOM( scheduleObjectForDOM ) {
+		var levelArray = scheduleObjectForDOM.levelArray;
 
-		categoryLevelsArray.forEach(function(LevelInArray){
-			totalNumberOfEvent += eventLevelCategory[LevelInArray].length;
-
-			eventLevelCategory[LevelInArray].forEach(function(event){
-				event.width = 600/LevelInArray;
+		levelArray.forEach(function(levelNum){
+			scheduleObjectForDOM[levelNum].forEach(function(event){
 				event.height = event.end - event.start;
 				event.topPosition = event.start;
 			});
 		});
+		
+		return scheduleObjectForDOM;
+	}
 
-		eventLevelCategory.totalNumberOfEvent = totalNumberOfEvent;
-		return eventLevelCategory;
+	function prepareScheduleObjectForDOM (scheduledEventsArray) {
+		var scheduleObjectForDOM = categoryEventsLevel(scheduledEventsArray);
+
+		// first add event labelName to raw given scheduledEventsArray
+		var scheduledEventsArray_addLabel = scheduledEventsArray.map(function(event, index){
+			event.labelName = 'event' + index;
+			return event;
+		});
+
+		if( typeof scheduleObjectForDOM.levelArray !== 'undefined' ) {
+			var reverseLevelArray = scheduleObjectForDOM.levelArray.reverse();
+
+			reverseLevelArray.forEach(function(levelNum){
+				scheduleObjectForDOM[levelNum].forEach(function(event){
+
+					if(typeof event.leftPosition === 'undefined' ) {
+						event.width = 600/levelNum;
+						event.leftPosition = 600 - event.width;
+					}
+
+					// set the width and left position for its conflict events
+					if( typeof event.conflictsEventArray !== 'undefined' && event.conflictsEventArray.length > 0) {
+						event.conflictsEventArray.forEach(function(conflictEvent){
+							conflictEvent.width = event.width;
+							conflictEvent.leftPosition = conflictEvent.width * (conflictEvent.AtLevel - 1);
+
+							// substitude the event in lower level
+							var copyOfConflictEvent = Object.assign({}, conflictEvent);
+
+							if(typeof scheduleObjectForDOM[copyOfConflictEvent.AtLevel][copyOfConflictEvent.IndexNum].width === 'undefined') {
+								scheduleObjectForDOM[copyOfConflictEvent.AtLevel].splice(copyOfConflictEvent.IndexNum, 1, copyOfConflictEvent);
+							}
+						});
+					}
+				});
+			});
+		}
+
+		// add height and top position value for object
+		scheduleObjectForDOM = addHeightTopForScheduleObjectForDOM( scheduleObjectForDOM );
+
+		return scheduleObjectForDOM;
+
 	}
 
 	return {
-		prepareScheduleStructure : prepareScheduleStructure
+		prepareScheduleObjectForDOM : prepareScheduleObjectForDOM
 	}
 
 })();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
