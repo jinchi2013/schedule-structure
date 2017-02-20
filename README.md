@@ -2,7 +2,11 @@
 
 goGoGo() with valid params in the console
 
-for example, goGoGo([{start: 30, end: 40}, {start: 35, end: 70}, {start: 60, end: 90}, {start: 25, end: 85}]); 
+for example:
+
+var events = [ {start: 30, end: 150}, {start: 540, end: 600}, {start: 560, end: 620}, {start: 610, end: 670} ];
+
+goGoGo(events); 
 
 Request is like below:
 
@@ -39,8 +43,6 @@ You may structure your code however you like, but you must implement the followi
 in the global namespace. The function takes in an array of events and will lay out the events
 
 according to the above description.
-
-function layOutDay (events) { }
 
 This function will be invoked from the console for testing purposes. If it cannot be invoked, the
 

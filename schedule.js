@@ -1,4 +1,4 @@
-scheduleModule = (function() {
+var scheduleModule = (function() {
 	function categoryEventsLevel ( scheduledEventsArray ) {
 		if( scheduledEventsArray.length === 0 ) {
 			return false;
@@ -64,10 +64,8 @@ scheduleModule = (function() {
 							newStartEvent['conflictsEventArray'].push(Object.assign({}, eventInLevel));
 							
 							// add 1 to newLevelIndex, 
-							
 							// add attribute to newEvent => hasConflictIn1 : true
 							if ( typeof newStartEvent['hasConflictIn' + LevelInArray] === 'undefined' ) {
-
 								// found out this is the first time this conflict found out
 								newStartEvent['hasConflictIn' + LevelInArray] = true;
 								newLevelIndex++;
